@@ -2,5 +2,10 @@
   "name": "planclave",
   "version": "0.1.0",
   "description": "Team plan review — submit plans for async block-level review and import feedback into Claude Code",
+  "author": {
+    "name": "badaverse"
+  },
+  "repository": "https://github.com/badaverse/planclave",
+  "keywords": ["planning", "review", "team", "async", "collaboration"],
   "commands": "./commands/"
 }

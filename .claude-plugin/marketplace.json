@@ -1,0 +1,13 @@
+{
+  "name": "planclave",
+  "owner": {
+    "name": "badaverse"
+  },
+  "plugins": [
+    {
+      "name": "planclave",
+      "source": "./packages/plugin",
+      "description": "Team plan review — submit plans for async block-level review and import feedback into Claude Code"
+    }
+  ]
+}
