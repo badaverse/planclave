@@ -39,20 +39,14 @@ Install the Claude Code plugin to submit plans and import review feedback.
 **From Claude Code (recommended):**
 
 ```
-/install-plugin https://github.com/badaverse/planclave
+/plugin marketplace add badaverse/planclave
+/plugin install planclave@planclave
 ```
 
 **From npm:**
 
 ```bash
 npm install -g @badaverse/planclave
-```
-
-**From source:**
-
-```bash
-git clone https://github.com/badaverse/planclave.git ~/planclave
-cd ~/planclave && npm install && npm run build --workspace=packages/plugin
 ```
 
 Then point the plugin to your Planclave server (add to `~/.zshrc` or `~/.bashrc`):
