@@ -1,0 +1,15 @@
+{
+  "name": "planclave",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/planclave",
+    "build": "npm run build --workspace=apps/planclave",
+    "start": "npm run start --workspace=apps/planclave"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

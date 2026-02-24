@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# build output
+.next/
+out/
+dist/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# data
+data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# references (cloned repos)
+references/
+
+# auto-generated
+*.tsbuildinfo
+next-env.d.ts
+
+# claude
+.claude/
