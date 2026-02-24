@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+data
+*.md
+.env*
+.claude-plugin
+commands
+plugin

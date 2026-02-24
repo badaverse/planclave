@@ -1,0 +1,31 @@
+services:
+  planclave:
+    build: .
+    ports:
+      - "${PORT:-4002}:4002"
+    environment:
+      - DATABASE_PROVIDER=${DATABASE_PROVIDER:-sqlite}
+      - DATABASE_URL=${DATABASE_URL:-/data/planclave.db}
+      - PLANCLAVE_IMAGE_DIR=/data/images
+    volumes:
+      - planclave-data:/data
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_DB: planclave
+      POSTGRES_USER: planclave
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-planclave}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U planclave"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  planclave-data:
+  pg-data:

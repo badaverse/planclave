@@ -1,0 +1,6 @@
+{
+  "name": "planclave",
+  "version": "0.1.0",
+  "description": "팀 플랜 리뷰 — 블록 단위 비동기 리뷰 후 Claude Code에 피드백 import",
+  "commands": "./commands/"
+}
