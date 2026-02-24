@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { readdir, readFile, stat } from "fs/promises";
@@ -38,7 +36,7 @@ function getProjectName(): string {
 
 interface PlanInfo {
   content: string;
-  filename: string; // e.g. "tranquil-pondering-chipmunk.md"
+  filename: string;
 }
 
 async function findLatestPlan(): Promise<PlanInfo | null> {
@@ -93,7 +91,6 @@ async function submit(planId?: string): Promise<void> {
     process.exit(1);
   }
 
-  // Find latest plan from ~/.claude/plans/
   const plan = await findLatestPlan();
   if (!plan) {
     console.error("Error: No plan found in ~/.claude/plans/");
@@ -105,7 +102,6 @@ async function submit(planId?: string): Promise<void> {
   const headers = authHeaders(identity);
 
   if (planId) {
-    // Update existing plan with new version
     const res = await fetch(
       `${PLANCLAVE_URL}/api/plans/${planId}/versions`,
       {
@@ -122,11 +118,10 @@ async function submit(planId?: string): Promise<void> {
 
     const data = await res.json();
     console.log(
-      `Planclave 플랜 ${planId} → 버전 ${data.version} 업데이트`
+      `Planclave plan ${planId} updated to v${data.version}`
     );
     console.log(`${PLANCLAVE_URL}/plans/${planId}`);
   } else {
-    // Create new plan
     const id = randomUUID();
     const res = await fetch(`${PLANCLAVE_URL}/api/plans`, {
       method: "POST",
@@ -145,9 +140,9 @@ async function submit(planId?: string): Promise<void> {
       process.exit(1);
     }
 
-    console.log(`Planclave에 업로드 완료: ${id} (v1)`);
-    console.log(`프로젝트: ${projectName}`);
-    console.log(`플랜 파일: ${plan.filename}`);
+    console.log(`Uploaded to Planclave: ${id} (v1)`);
+    console.log(`Project: ${projectName}`);
+    console.log(`Plan file: ${plan.filename}`);
     console.log(`${PLANCLAVE_URL}/plans/${id}`);
   }
 }

@@ -1,0 +1,27 @@
+{
+  "name": "@badaverse/planclave",
+  "version": "0.1.0",
+  "description": "Claude Code plugin for team plan review — submit plans and import feedback",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/badaverse/planclave.git",
+    "directory": "packages/plugin"
+  },
+  "bin": {
+    "planclave": "dist/cli.js"
+  },
+  "files": [
+    "dist/",
+    ".claude-plugin/",
+    "commands/"
+  ],
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/cli.js --banner:js='#!/usr/bin/env node'",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "@types/node": "^22.0.0"
+  }
+}

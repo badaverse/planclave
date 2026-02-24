@@ -30,75 +30,172 @@ Claude revises plan  ← /planclave-import  ← Feedback ready
 - **Reviewer management** — Assign reviewers, track completion status, mark reviews as done.
 - **Structured export** — `planclave import` outputs a plain-text summary with line ranges that Claude can directly parse and act on.
 - **Claude Code plugin** — Two slash commands: `/planclave-submit` and `/planclave-import`. Zero friction.
-- **Self-hostable** — SQLite by default (zero setup), Docker support included.
+- **Self-hostable** — SQLite by default (zero setup), Docker and reverse proxy guides included.
 
-## Quick Start
+## Self-Hosting Guide
 
-### Prerequisites
+Planclave is designed to run on your company's internal server. One server instance serves the entire team — each developer connects from their local Claude Code via the plugin.
 
-- Node.js 20+ (or Bun 1.1+)
-- Git
+```
+┌─ Developer A ─────────┐     ┌─ Developer B ─────────┐
+│  Claude Code           │     │  Claude Code           │
+│  /planclave-submit ────┼─┐   │  /planclave-submit ────┼─┐
+│  /planclave-import ────┼─┤   │  /planclave-import ────┼─┤
+└────────────────────────┘ │   └────────────────────────┘ │
+                           │                              │
+           ┌───────────────┴──────────────────────────────┘
+           ▼
+┌─ Internal Server ──────────────────────────────┐
+│  https://planclave.internal.yourco.com         │
+│                                                │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐  │
+│  │  Nginx   │───▶│ Planclave│───▶│ SQLite/  │  │
+│  │ (reverse │    │ (Docker) │    │ Postgres │  │
+│  │  proxy)  │    │ :4002    │    │          │  │
+│  └──────────┘    └──────────┘    └──────────┘  │
+└────────────────────────────────────────────────┘
+           ▲
+           │
+┌──────────┴─────────────┐
+│  Browser (any team     │
+│  member reviews plans) │
+└────────────────────────┘
+```
 
-### Setup
+### 1. Deploy the Server
+
+**Requirements:** A Linux server with Docker installed, accessible to your team (internal network or VPN).
 
 ```bash
+# Clone the repo on your server
 git clone https://github.com/badaverse/planclave.git
-cd planclave
+cd planclave/apps/planclave
 
-# Install dependencies
-npm install
+# Create .env
+cat > .env << 'EOF'
+PORT=4002
+DATABASE_URL=/data/planclave.db
+PLANCLAVE_IMAGE_DIR=/data/images
+EOF
 
-# Set up environment (defaults work out of the box)
-cp apps/planclave/.env.example apps/planclave/.env
-
-# Start dev server
-npm run dev
-```
-
-Open [http://localhost:4002](http://localhost:4002). That's it — SQLite is the default, no database setup required.
-
-### Connect Claude Code
-
-```bash
-# In your project directory, add the plugin:
-claude plugin add /path/to/planclave/apps/planclave
-
-# Submit a plan:
-/planclave-submit
-
-# After team review, import feedback:
-/planclave-import <plan-id>
-```
-
-## Docker
-
-```bash
-# SQLite (default, zero config)
+# Start with Docker
 docker compose up -d
+```
 
-# With PostgreSQL
-DATABASE_PROVIDER=postgres \
-DATABASE_URL=postgresql://planclave:planclave@postgres:5432/planclave \
+The app is now running on port 4002. Data is persisted in a Docker volume (`planclave-data`).
+
+**With PostgreSQL** (recommended for larger teams):
+
+```bash
+cat > .env << 'EOF'
+PORT=4002
+DATABASE_PROVIDER=postgres
+DATABASE_URL=postgresql://planclave:planclave@postgres:5432/planclave
+PLANCLAVE_IMAGE_DIR=/data/images
+EOF
+
 docker compose --profile postgres up -d
+```
+
+### 2. Set Up Reverse Proxy (Recommended)
+
+Expose Planclave behind nginx with HTTPS so your team can access it at a clean URL.
+
+**nginx configuration:**
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name planclave.internal.yourco.com;
+
+    ssl_certificate     /etc/ssl/certs/yourco.pem;
+    ssl_certificate_key /etc/ssl/private/yourco-key.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:4002;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### 3. Install the Plugin (Each Developer)
+
+Each team member installs the Claude Code plugin on their local machine.
+
+**Option A: npm (recommended)**
+
+```bash
+npm install -g @badaverse/planclave
+
+# Register with Claude Code
+claude plugin add $(npm root -g)/@badaverse/planclave
+```
+
+**Option B: From source**
+
+```bash
+git clone https://github.com/badaverse/planclave.git ~/planclave
+cd ~/planclave && npm install && npm run build --workspace=packages/plugin
+claude plugin add ~/planclave/packages/plugin
+```
+
+Then set the server URL in your shell profile (`~/.zshrc` or `~/.bashrc`):
+
+```bash
+export PLANCLAVE_URL=https://planclave.internal.yourco.com
+```
+
+### 4. Team Workflow
+
+```bash
+# Developer submits a plan for review
+/planclave-submit
+# → "Uploaded to Planclave: abc123 (v1)"
+# → "https://planclave.internal.yourco.com/plans/abc123"
+
+# Share the URL with your team in Slack/Teams/etc.
+
+# Team members open the URL in browser and review:
+#   - Click "+" on any block gutter to start a thread
+#   - Comment on specific code lines or table rows
+#   - Mark review as complete when done
+
+# Developer imports feedback back into Claude
+/planclave-import abc123
+# → Claude reads the structured feedback and revises the plan
+
+# Submit the revised plan as v2
+/planclave-submit abc123
+```
+
+### Updating
+
+```bash
+cd /path/to/planclave/apps/planclave
+git pull
+docker compose up -d --build
 ```
 
 ## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  Claude Code                                         │
+│  Claude Code (developer's local machine)             │
 │  ┌────────────────┐    ┌─────────────────┐           │
 │  │ /planclave-    │    │ /planclave-     │           │
 │  │   submit       │    │   import        │           │
 │  └───────┬────────┘    └────────┬────────┘           │
 │          │                      │                    │
-│          │    CLI (plugin/index.ts)                   │
+│          │    CLI (packages/plugin)                    │
 │          │    reads ~/.claude/plans/                  │
 └──────────┼──────────────────────┼────────────────────┘
            │ POST /api/plans      │ GET /api/plans/:id/export
            ▼                      ▼
 ┌──────────────────────────────────────────────────────┐
-│  Next.js App (localhost:4002)                        │
+│  Planclave Server (self-hosted)                      │
 │                                                      │
 │  ┌─────────┐  ┌──────────────┐  ┌────────────────┐  │
 │  │ Plan    │  │ Block Gutter │  │ Reviewer       │  │
@@ -118,8 +215,19 @@ docker compose --profile postgres up -d
 | UI | shadcn/ui (Radix + Tailwind CSS v4) |
 | Design | oklch color model, dark-first "The Enclave" theme |
 | Database | Drizzle ORM — SQLite (default) / PostgreSQL |
-| CLI | TypeScript, executed via tsx |
+| CLI | TypeScript, bundled with esbuild (zero runtime deps) |
 | Deployment | Docker with multi-stage build |
+
+## Local Development
+
+```bash
+git clone https://github.com/badaverse/planclave.git
+cd planclave
+npm install
+cp apps/planclave/.env.example apps/planclave/.env
+npm run dev
+# → http://localhost:4002
+```
 
 ## API Overview
 
@@ -138,7 +246,6 @@ docker compose --profile postgres up -d
 Contributions welcome! Please open an issue first for major changes.
 
 ```bash
-# Development workflow
 npm install
 npm run dev          # Start dev server on :4002
 cd apps/planclave

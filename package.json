@@ -1,8 +1,10 @@
 {
   "name": "planclave",
+  "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=apps/planclave",
