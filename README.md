@@ -34,30 +34,34 @@ Claude revises plan  ← /planclave-import  ← Feedback ready
 
 ## Plugin Installation
 
-Install the Claude Code plugin to submit plans and import review feedback.
+Two things to install: the **CLI** (binary on PATH) and the **plugin** (slash commands in Claude Code).
 
-**From Claude Code (recommended):**
+### Step 1: Install the CLI
+
+```bash
+npm install -g @badaverse/planclave
+```
+
+### Step 2: Add the marketplace and install the plugin
+
+Inside Claude Code:
 
 ```
 /plugin marketplace add badaverse/planclave
 /plugin install planclave@planclave
 ```
 
-**From npm:**
+### Step 3: Configure server URL
 
-```bash
-npm install -g @badaverse/planclave
-```
-
-Then point the plugin to your Planclave server (add to `~/.zshrc` or `~/.bashrc`):
+Add to `~/.zshrc` or `~/.bashrc`:
 
 ```bash
 export PLANCLAVE_URL=https://planclave.yourcompany.com
 ```
 
-**Usage:**
+### Usage
 
-```bash
+```
 /planclave-submit              # Submit the latest plan for team review
 /planclave-submit <plan-id>    # Update an existing plan (creates new version)
 /planclave-import <plan-id>    # Import team feedback into Claude

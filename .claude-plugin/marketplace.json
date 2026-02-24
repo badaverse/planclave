@@ -1,13 +1,27 @@
 {
   "name": "planclave",
   "owner": {
-    "name": "badaverse"
+    "name": "badaverse",
+    "email": "mkkim417@kakao.com"
+  },
+  "metadata": {
+    "description": "Team plan review platform for the AI coding era",
+    "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "planclave",
       "source": "./packages/plugin",
-      "description": "Team plan review — submit plans for async block-level review and import feedback into Claude Code"
+      "description": "Submit plans for async block-level team review and import structured feedback into Claude Code",
+      "version": "0.1.0",
+      "author": {
+        "name": "badaverse"
+      },
+      "homepage": "https://github.com/badaverse/planclave",
+      "repository": "https://github.com/badaverse/planclave",
+      "license": "MIT",
+      "keywords": ["planning", "review", "team", "async", "collaboration"],
+      "category": "collaboration"
     }
   ]
 }
