@@ -32,6 +32,39 @@ Claude revises plan  ← /planclave-import  ← Feedback ready
 - **Claude Code plugin** — Two slash commands: `/planclave-submit` and `/planclave-import`. Zero friction.
 - **Self-hostable** — SQLite by default (zero setup), Docker and reverse proxy guides included.
 
+## Plugin Installation
+
+Install the Claude Code plugin to submit plans and import review feedback.
+
+**From npm:**
+
+```bash
+npm install -g @badaverse/planclave
+claude plugin add $(npm root -g)/@badaverse/planclave
+```
+
+**From source:**
+
+```bash
+git clone https://github.com/badaverse/planclave.git ~/planclave
+cd ~/planclave && npm install && npm run build --workspace=packages/plugin
+claude plugin add ~/planclave/packages/plugin
+```
+
+Then point the plugin to your Planclave server (add to `~/.zshrc` or `~/.bashrc`):
+
+```bash
+export PLANCLAVE_URL=https://planclave.yourcompany.com
+```
+
+**Usage:**
+
+```bash
+/planclave-submit              # Submit the latest plan for team review
+/planclave-submit <plan-id>    # Update an existing plan (creates new version)
+/planclave-import <plan-id>    # Import team feedback into Claude
+```
+
 ## Self-Hosting Guide
 
 Planclave is designed to run on your company's internal server. One server instance serves the entire team — each developer connects from their local Claude Code via the plugin.
@@ -123,30 +156,7 @@ server {
 
 ### 3. Install the Plugin (Each Developer)
 
-Each team member installs the Claude Code plugin on their local machine.
-
-**Option A: npm (recommended)**
-
-```bash
-npm install -g @badaverse/planclave
-
-# Register with Claude Code
-claude plugin add $(npm root -g)/@badaverse/planclave
-```
-
-**Option B: From source**
-
-```bash
-git clone https://github.com/badaverse/planclave.git ~/planclave
-cd ~/planclave && npm install && npm run build --workspace=packages/plugin
-claude plugin add ~/planclave/packages/plugin
-```
-
-Then set the server URL in your shell profile (`~/.zshrc` or `~/.bashrc`):
-
-```bash
-export PLANCLAVE_URL=https://planclave.internal.yourco.com
-```
+Each team member follows the [Plugin Installation](#plugin-installation) section above, setting `PLANCLAVE_URL` to the server address from step 2.
 
 ### 4. Team Workflow
 
